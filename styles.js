@@ -1,0 +1,70 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#434C5E',
+    },
+    cube_icon: {
+      width: 150,
+      height: 150,
+      marginLeft: '50%',
+      marginTop: '-10%',
+      tintColor: '#E5E9F0',
+      transform: [{ rotate: '9deg'}],
+    },
+    main_text: {
+      color: '#E5E9F0',
+      fontSize: 54,
+      textAlign: 'left',
+      marginTop: '30%',
+      marginLeft: '8%',
+      lineHeight: 70,
+      fontStyle: 'normal',
+      fontFamily: 'RobotoMono',
+    },
+    top_view: {
+      flex: 0.55, 
+      backgroundColor: '#434C5E'
+    },
+    bottom_view: {
+      flex: 0.45, 
+        backgroundColor: '#ECEFF4',
+        borderTopRightRadius: 26,
+        borderTopLeftRadius: 26,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    input_text: {
+      fontFamily: 'RobotoMono',
+      fontSize: 20,
+      color: '#434C5E',
+      fontStyle: 'normal',
+      fontWeight: '300',
+      marginBottom: '25%',
+      width: '60%',
+      height: 40,
+      textAlign: 'center',
+      borderBottomWidth: 1,
+    },
+    scramble_button: {
+      width: '50%',
+      height: 50,
+      textAlign: 'center',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#D8DEE9',
+      borderRadius: 16,
+      shadowColor: '#000',
+      shadowOpacity: 0.5,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    scramble_button_text: {
+      fontFamily: 'RobotoMono',
+      fontSize: 20,
+      color: '#434C5E',
+      fontStyle: 'normal',
+      fontWeight: '300',
+    },
+  });
