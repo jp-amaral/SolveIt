@@ -5,8 +5,10 @@ import {
   FlatList,
   Image,
   Text,
-  Animated
-
+  Animated,
+  TouchableOpacity,
+  BackHandler,
+  Dimensions
 } from 'react-native';
 import { styles } from './MovementsPageStyles'
 import CubeItem from './CubeItem';
@@ -83,6 +85,8 @@ const MovementsPage = ({ route, navigation }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [timerFinished, setTimerFinished] = useState(false);
   const flatListRef = useRef(null);
+  const [isSavedClicked, setIsSaved] = useState(false);
+  const [saveTimeLocal, setSaveTimeLocal] = useState(false);
 
   const handleScroll = () => {
     // Simulate scrolling by scrolling to a small offset
@@ -201,14 +205,15 @@ const MovementsPage = ({ route, navigation }) => {
       playSoundStart();
       setIsRunning(false);
       setTimerFinished(true);
-      setSaveIcon('bookmark-outline');
+      setIsSaved(false);
     };
 
     const hideTimerUI = () => {
       setShowTimer(false);
-      setTime({ minutes: 0, seconds: 0, milliseconds: 0 });
       setIsRunning(false);
       setTimerFinished(false);
+      setSaveIcon('bookmark-outline');
+      setIsSaved(false);
     };
 
 
@@ -217,6 +222,9 @@ const MovementsPage = ({ route, navigation }) => {
       setTime({ minutes: 0, seconds: 0, milliseconds: 0 });
       setIsRunning(true);
       setShowTimer(true);
+      setIsSaved(false);
+      setSaveIcon('bookmark-outline');
+      setSaveTimeLocal(false);
     };
 
     const returnHome = () => {
@@ -301,15 +309,44 @@ const MovementsPage = ({ route, navigation }) => {
         time: time,
         isBest: false
       };
-      console.log(newTiming);
+      // console.log(newTiming);
       saveTiming(newTiming);
     };
 
+    const deleteCurrentTime = async () => {
+      try {
+        // Retrieve all timings
+        const timingsJSON = await AsyncStorage.getItem('timings');
+        const timings = timingsJSON != null ? JSON.parse(timingsJSON) : [];
+        
+        // Check if there are timings
+        if (timings.length > 0) {
+          // Remove the last timing
+          timings.pop();
+    
+          // Save the updated timings back to AsyncStorage
+          // console.log(timings);
+          await AsyncStorage.setItem('timings', JSON.stringify(timings));
+        }
+      } catch (error) {
+        // Error deleting data
+        console.log(error);
+      }
+    };
+    
 
-    const saveTime = () => {
-      playSoundStart();
-      setSaveIcon('bookmark');
-      saveCurrentTime();
+
+    function saveTimeIconStatus  () {
+      setIsSaved(!isSavedClicked);
+      if(!isSavedClicked){
+        setSaveIcon('bookmark');
+        setSaveTimeLocal(true);
+        saveCurrentTime();
+      } else {
+        setSaveIcon('bookmark-outline');
+        setSaveTimeLocal(false);
+        deleteCurrentTime();
+      }
     };
 
     // Function to compare two times
@@ -326,6 +363,25 @@ const MovementsPage = ({ route, navigation }) => {
       return false;
     };
     
+    // Back handler
+    useEffect(() => {
+      const backAction = () => {
+        if (showtimer) {
+          hideTimerUI();
+          return true;
+        }
+        return false;
+      };
+      
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => backHandler.remove();
+    }, [showtimer]);
+
+
     return (
         <SafeAreaView style={styles.container}>
             {!showtimer && <FlatList
@@ -361,14 +417,17 @@ const MovementsPage = ({ route, navigation }) => {
                 <Animated.Text style={{...styles.timer_text, color: timerFinished ? '#A3BE8C' : '#434C5E', opacity: fadeAnim}}>
                   {formatMinutes(time.minutes)}:{formatSeconds(time.seconds)}:{formatMillisecond(time.milliseconds)}
                 </Animated.Text>
-                {!timerFinished && <Animated.View style={{...styles.stop_timer_icon, opacity: scaleAnim }}>
-                  <Icon name="stop" size={80} color={'#D08770'}onPress={() => {animateIcon(); finishTimer();}}/>
+                {!timerFinished && <Animated.View style={{...styles.stop_timer_icon, opacity: scaleAnim } }>
+                  {/* <Icon name="stop" size={80} color={'#D08770'}onPress={() => {animateIcon(); finishTimer();}}/> */} 
+                  <TouchableOpacity onPress={() => {animateIcon(); finishTimer();}} style={{marginTop: 10}}>
+                    <Image source={require('../assets/images/stop_circle.png')} style={styles.stop_timer_image} onPress={() => {finishTimer();}}/>
+                  </TouchableOpacity>
                 </Animated.View>}
                 {timerFinished && 
                 <View style={styles.save_container}>
                   <Text style={styles.save_text}>Save your time! </Text>
                   <Animated.View style={{...styles.save_icon, opacity: scaleAnim }}>
-                    <Icon name={saveIcon} size={50} color={'#434C5E'}onPress={() => {animateIcon(); saveTime();}}/>
+                    <Icon name={saveIcon} size={50} color={'#434C5E'}onPress={() => {animateIcon(); saveTimeIconStatus();}}/>
                   </Animated.View>
               </View>}
               </View>

@@ -3,21 +3,9 @@ import { Text, View, Image, Button, TouchableOpacity,Alert, TextInput, Animated 
 import { useFonts, RobotoMono_300Light } from '@expo-google-fonts/dev';
 import { styles } from '../styles';
 import React, { useState, useEffect, useRef } from 'react';
-import {Audio} from 'expo-av';
 import  Icon  from 'react-native-vector-icons/MaterialIcons';
 
 const HomePage = ({ navigation }) => {
-  const soundObject = new Audio.Sound();
-
-  const playSound = async () => {
-    try {
-      await soundObject.loadAsync(require('../assets/sounds/click.mp3'));
-      await soundObject.playAsync();
-      // Your sound is playing!
-    } catch (error) {
-      // An error occurred!
-    }
-  };
   
   const [numberOfMovements, setNumberOfMovements] = useState('');
 
@@ -35,8 +23,8 @@ const HomePage = ({ navigation }) => {
       return;
     }
 
-    if (parsedValue < 1 || parsedValue > 50) {
-      Alert.alert('Invalid Input', 'Please enter a number of movements between 1 and 50.');
+    if (parsedValue < 4 || parsedValue > 50) {
+      Alert.alert('Invalid Input', 'Please enter a number of movements between 4 and 50.');
       return;
     }
    
@@ -52,7 +40,7 @@ const HomePage = ({ navigation }) => {
   }
 
   const showProfile = () => {
-    navigation.navigate('Profile');
+    navigation.navigate('Profile',);
   }
 
   return (
@@ -73,9 +61,10 @@ const HomePage = ({ navigation }) => {
             value={numberOfMovements}
             onChangeText={setNumberOfMovements}
           />
-          <TouchableOpacity onPress={handlePress} style={styles.scramble_button}>
+          {/* <TouchableOpacity onPress={handlePress} style={styles.scramble_button}>
             <Text style={styles.scramble_button_text}>Scramble!</Text>
-          </TouchableOpacity>        
+          </TouchableOpacity>         */}
+          <Icon name="play-arrow" size={50} style={styles.play_icon} onPress={() => {handlePress()}}/>
       </View>
     </View>
   );

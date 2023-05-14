@@ -15,4 +15,5 @@ DONE 3 - Add a profile page
 4 - Add a dark theme toggle
     -> This just changes the background color of the app in the movements page (including the timer) and the profile page
     -> Also changes the color of the cubes in the movements page
+5- - Fix sound effect
     

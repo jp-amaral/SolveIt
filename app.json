@@ -19,8 +19,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#eceff4"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#E5E9F0"
       },
       "package": "com.jp_amaral.SolveIt"
     },

@@ -117,6 +117,11 @@ export const styles = StyleSheet.create({
       bottom: 0,
       marginBottom: 36,
     },
+    stop_timer_image: {
+      width: 46,
+      height: 46,
+      tintColor: '#D08770',
+    },
     save_icon: {
       width: 100,
       height: 100,
@@ -124,7 +129,7 @@ export const styles = StyleSheet.create({
       alignItems: 'center',
       position: 'absolute',
       bottom: 0,
-      marginBottom: 36,
+      marginBottom: 32,
     },
     save_text: {
       fontFamily: 'RobotoMono',
