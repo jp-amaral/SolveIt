@@ -56,15 +56,12 @@ const HomePage = ({ navigation }) => {
       <View style={styles.bottom_view}>
           <TextInput 
             style={styles.input_text}
-            placeholder='Number of movements'
+            placeholder='Input number of movements'
             keyboardType='numeric'
             value={numberOfMovements}
             onChangeText={setNumberOfMovements}
           />
-          {/* <TouchableOpacity onPress={handlePress} style={styles.scramble_button}>
-            <Text style={styles.scramble_button_text}>Scramble!</Text>
-          </TouchableOpacity>         */}
-          <Icon name="play-arrow" size={50} style={styles.play_icon} onPress={() => {handlePress()}}/>
+        <Icon name="play-arrow" size={55} style={styles.play_icon} onPress={() => {handlePress()}}/>
       </View>
     </View>
   );

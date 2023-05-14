@@ -4,24 +4,24 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: '10%',
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+    backgroundColor: '#E5E9F0',
   },
   back_icon: {
     color: '#434C5E',
     position: 'absolute',
     left: 0,
     paddingLeft: 20,
-    top: 40,
+    top: 60,
   },
   delete_icon: {
     color: '#D08770',
     position: 'absolute',
     right: 0,
     paddingRight: 20,
-    top: 40,
+    top: 60,
   },
   main_text: {
     fontFamily: 'RobotoMono',

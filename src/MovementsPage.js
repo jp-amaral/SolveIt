@@ -8,7 +8,8 @@ import {
   Animated,
   TouchableOpacity,
   BackHandler,
-  Dimensions
+  Dimensions,
+  StatusBar
 } from 'react-native';
 import { styles } from './MovementsPageStyles'
 import CubeItem from './CubeItem';
@@ -79,7 +80,8 @@ const generateMovements = (numberOfMovements) => {
 const MovementsPage = ({ route, navigation }) => {
 
   const soundObject = new Audio.Sound();
-
+  const flatListPosition = useRef(new Animated.Value(0)).current;
+  const timerContainerHeight = useRef(new Animated.Value(0)).current;
   const [showtimer, setShowTimer] = useState(false);
   const [time, setTime] = useState({ minutes: 0, seconds: 0, milliseconds: 0 }); 
   const [isRunning, setIsRunning] = useState(false);
@@ -209,11 +211,23 @@ const MovementsPage = ({ route, navigation }) => {
     };
 
     const hideTimerUI = () => {
-      setShowTimer(false);
-      setIsRunning(false);
-      setTimerFinished(false);
-      setSaveIcon('bookmark-outline');
-      setIsSaved(false);
+      // animate flatListPosition back to 0
+      Animated.timing(timerContainerHeight, {
+        toValue: 0, 
+        duration: 100,
+        useNativeDriver: true
+      }).start( () => {
+        setShowTimer(false);
+        setIsRunning(false);
+        setTimerFinished(false);
+        setSaveIcon('bookmark-outline');
+        setIsSaved(false);
+        Animated.timing(flatListPosition, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true
+        }).start();
+      });
     };
 
 
@@ -225,6 +239,18 @@ const MovementsPage = ({ route, navigation }) => {
       setIsSaved(false);
       setSaveIcon('bookmark-outline');
       setSaveTimeLocal(false);
+      // animate flatListPosition
+      Animated.timing(flatListPosition, {
+          toValue: -250, // or -yourViewHeight
+          duration: 300, // duration of the animation, 500ms in this case
+          useNativeDriver: true // use native driver for better performance
+      }).start(() => {
+        Animated.timing(timerContainerHeight, {
+          toValue: 1, 
+          duration: 300,
+          useNativeDriver: true
+        }).start()
+      });
     };
 
     const returnHome = () => {
@@ -383,14 +409,18 @@ const MovementsPage = ({ route, navigation }) => {
 
 
     return (
+        
         <SafeAreaView style={styles.container}>
-            {!showtimer && <FlatList
+          <StatusBar style="auto" />
+          <Animated.View style={{ transform: [{ translateY: flatListPosition }] }}>
+              <FlatList
                 data={views}
                 renderItem={({item}) => <Item value={item.value} />}
                 keyExtractor={(item, index) => index.toString()}
                 numColumns={2}
                 key={2}
                 ref={flatListRef}
+                scrollEnabled={showtimer ? false : true}
                 ListHeaderComponent={
                   <View style={styles.header}>
                       <Icon name="arrow-back-ios" size={30} style={styles.back_icon} onPress={() => {returnHome()}}/>
@@ -406,32 +436,33 @@ const MovementsPage = ({ route, navigation }) => {
                         solve the cube! 
                       </Text>
                       <Animated.View style={{...styles.timer_icon, opacity: scaleAnim }}>
-                        <Icon name="timer" size={60}  color={'#434C5E'} onPress={() => {animateIcon(); showTimerUI();}}/>
+                      {!showtimer &&<Icon name="timer" size={60}  color={'#434C5E'} onPress={() => {animateIcon(); showTimerUI();}}/>}
+                      {showtimer &&<Icon name="close" size={60} style={styles.back_icon_timer} onPress={() => {hideTimerUI()}}/>}
                       </Animated.View>
                   </View>
                 }
-            />}
-            {showtimer && 
-              <View style={styles.timer_container}>
-                <Icon name="arrow-back-ios" size={30} style={styles.back_icon_timer} onPress={() => {hideTimerUI()}}/>
+            />
+            </Animated.View>
+            {showtimer && <Animated.View style={{...styles.timer_container, opacity: timerContainerHeight }}>
                 <Animated.Text style={{...styles.timer_text, color: timerFinished ? '#A3BE8C' : '#434C5E', opacity: fadeAnim}}>
                   {formatMinutes(time.minutes)}:{formatSeconds(time.seconds)}:{formatMillisecond(time.milliseconds)}
                 </Animated.Text>
+
                 {!timerFinished && <Animated.View style={{...styles.stop_timer_icon, opacity: scaleAnim } }>
-                  {/* <Icon name="stop" size={80} color={'#D08770'}onPress={() => {animateIcon(); finishTimer();}}/> */} 
                   <TouchableOpacity onPress={() => {animateIcon(); finishTimer();}} style={{marginTop: 10}}>
                     <Image source={require('../assets/images/stop_circle.png')} style={styles.stop_timer_image} onPress={() => {finishTimer();}}/>
                   </TouchableOpacity>
                 </Animated.View>}
+
                 {timerFinished && 
                 <View style={styles.save_container}>
                   <Text style={styles.save_text}>Save your time! </Text>
                   <Animated.View style={{...styles.save_icon, opacity: scaleAnim }}>
                     <Icon name={saveIcon} size={50} color={'#434C5E'}onPress={() => {animateIcon(); saveTimeIconStatus();}}/>
                   </Animated.View>
-              </View>}
-              </View>
-            }
+                </View>}
+              </Animated.View>}
+            
         </SafeAreaView>
     );
 };

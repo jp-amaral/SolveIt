@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Alert, Text, SafeAreaView , FlatList, View, Image} from 'react-native'
+import { Alert, Text, SafeAreaView , FlatList, View, Image, StatusBar} from 'react-native'
 import {styles} from './ProfileStyles'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -127,7 +127,6 @@ const Profile = ({ navigation }) => {
     const retrieveTimings = async () => {
         try {
         const timings = await AsyncStorage.getItem('timings');
-        console.log(timings);
         
         if (timings !== null) {
             setExistTimings(true);
@@ -149,6 +148,7 @@ const Profile = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <StatusBar style="auto" />
             <Icon name="arrow-back-ios" size={30} style={styles.back_icon} onPress={() => {home()}}/>
             {existTimings &&  <Icon name="delete-outline" size={30} style={styles.delete_icon} onPress={() => {clearTimings()}}/>}
             {existTimings ? <Text style={styles.main_text}>Your best time</Text> : <Text style={styles.main_text_alt}>No times yet!</Text>}
