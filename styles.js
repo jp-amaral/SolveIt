@@ -67,4 +67,12 @@ export const styles = StyleSheet.create({
       fontStyle: 'normal',
       fontWeight: '300',
     },
+    profile: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      marginTop: '12%',
+      marginRight: '3%',
+      color: '#E5E9F0',
+    },
   });

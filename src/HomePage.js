@@ -4,6 +4,7 @@ import { useFonts, RobotoMono_300Light } from '@expo-google-fonts/dev';
 import { styles } from '../styles';
 import React, { useState, useEffect, useRef } from 'react';
 import {Audio} from 'expo-av';
+import  Icon  from 'react-native-vector-icons/MaterialIcons';
 
 const HomePage = ({ navigation }) => {
   const soundObject = new Audio.Sound();
@@ -21,7 +22,7 @@ const HomePage = ({ navigation }) => {
   const [numberOfMovements, setNumberOfMovements] = useState('');
 
   const handlePress = () => {
-    playSound();
+    // playSound();
     if (numberOfMovements.trim() === '') {
       Alert.alert('Invalid Input', 'Please enter a number of movements.');
       return;
@@ -50,10 +51,15 @@ const HomePage = ({ navigation }) => {
     return null; // or render a loading component
   }
 
+  const showProfile = () => {
+    navigation.navigate('Profile');
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
       <View style={styles.top_view}>
+        <Icon name="person" size={30} style={styles.profile} onPress={() => {showProfile()}}/>
           <Text style={styles.main_text}>
             Scramble {'\n'}your {'\n'}cube!
           </Text>
