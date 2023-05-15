@@ -16,11 +16,35 @@ import CubeItem from './CubeItem';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {Audio} from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { activateKeepAwakeAsync , deactivateKeepAwake } from 'expo-keep-awake';
+import Toast, { BaseToast} from 'react-native-toast-message';
+import { useFonts, RobotoMono_300Light } from '@expo-google-fonts/dev'
+
 
 
 const Item = ({value}) => (
   <CubeItem label={value} />
 );
+
+const toastConfig = {
+  /*
+    Overwrite 'success' type,
+    by modifying the existing `BaseToast` component
+  */
+  success: (props) => (
+    <BaseToast
+      {...props}
+      style={{ flex: 1,borderLeftColor: '#434C5E', backgroundColor: '#434C5E', height: 60, borderRadius: 20, alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}
+      contentContainerStyle={{ flex: 1, alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}
+      text1Style={{
+        fontSize: 17,
+        fontWeight: '300',
+        fontFamily: 'RobotoMono',
+        color: '#F5F5F5',
+      }}
+    />
+  )
+};
 
 const movementLabels = ["F", "NF", "B", "NB", "U", "NU", "D", "ND", "L", "NL", "R", "NR"];
 
@@ -211,7 +235,8 @@ const MovementsPage = ({ route, navigation }) => {
     };
 
     const hideTimerUI = () => {
-      // animate flatListPosition back to 0
+      console.log('hide timer');
+      deactivateKeepAwake();
       Animated.timing(timerContainerHeight, {
         toValue: 0, 
         duration: 100,
@@ -232,6 +257,7 @@ const MovementsPage = ({ route, navigation }) => {
 
 
     const showTimerUI = () => {
+      activateKeepAwakeAsync();
       playSoundStart();
       setTime({ minutes: 0, seconds: 0, milliseconds: 0 });
       setIsRunning(true);
@@ -367,11 +393,26 @@ const MovementsPage = ({ route, navigation }) => {
       if(!isSavedClicked){
         setSaveIcon('bookmark');
         setSaveTimeLocal(true);
+        Toast.show({
+          text1: "Time saved!",
+          position: 'bottom',
+          visibilityTime: 1200,
+          bottomOffset: 30,
+        });
         saveCurrentTime();
       } else {
         setSaveIcon('bookmark-outline');
         setSaveTimeLocal(false);
         deleteCurrentTime();
+        Toast.show({
+          text1: "Time deleted!",
+          position: 'bottom',
+          visibilityTime: 1200,
+          bottomOffset: 30,
+          text1Style: {
+            textAlign: 'center'
+          }
+        });
       }
     };
 
@@ -437,13 +478,17 @@ const MovementsPage = ({ route, navigation }) => {
                       </Text>
                       <Animated.View style={{...styles.timer_icon, opacity: scaleAnim }}>
                       {!showtimer &&<Icon name="timer" size={60}  color={'#434C5E'} onPress={() => {animateIcon(); showTimerUI();}}/>}
-                      {showtimer &&<Icon name="close" size={60} style={styles.back_icon_timer} onPress={() => {hideTimerUI()}}/>}
+                      {showtimer &&
+                        <TouchableOpacity onPress={() => {hideTimerUI()}} style={styles.back_icon_timer_border}>
+                          <Icon name="close" size={60} style={styles.back_icon_timer} />
+                          </TouchableOpacity>}
                       </Animated.View>
                   </View>
                 }
             />
             </Animated.View>
-            {showtimer && <Animated.View style={{...styles.timer_container, opacity: timerContainerHeight }}>
+            {showtimer && 
+              <Animated.View style={{...styles.timer_container, opacity: timerContainerHeight }}>
                 <Animated.Text style={{...styles.timer_text, color: timerFinished ? '#A3BE8C' : '#434C5E', opacity: fadeAnim}}>
                   {formatMinutes(time.minutes)}:{formatSeconds(time.seconds)}:{formatMillisecond(time.milliseconds)}
                 </Animated.Text>
@@ -460,7 +505,9 @@ const MovementsPage = ({ route, navigation }) => {
                   <Animated.View style={{...styles.save_icon, opacity: scaleAnim }}>
                     <Icon name={saveIcon} size={50} color={'#434C5E'}onPress={() => {animateIcon(); saveTimeIconStatus();}}/>
                   </Animated.View>
+                  <Toast config={toastConfig} />
                 </View>}
+                
               </Animated.View>}
             
         </SafeAreaView>

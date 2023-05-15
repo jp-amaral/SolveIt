@@ -96,6 +96,14 @@ export const styles = StyleSheet.create({
       paddingTop: 20,
       paddingLeft: 20,
     },
+    back_icon_timer_border: {
+      color: '#434C5E',
+      width: 100,
+      height: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 50,
+    },
     stop_timer_icon: {
       width: 100,
       height: 100,
