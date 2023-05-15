@@ -1,15 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
 import { Text, View, Image, Button, TouchableOpacity,Alert, TextInput, Animated  } from 'react-native';
-import { useFonts, RobotoMono_300Light } from '@expo-google-fonts/dev';
 import { styles } from '../styles';
 import React, { useState, useEffect, useRef } from 'react';
 import  Icon  from 'react-native-vector-icons/MaterialIcons';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 import {Audio} from 'expo-av';
 
+
 const HomePage = ({ navigation }) => {
   
-  const [numberOfMovements, setNumberOfMovements] = useState('');
+  const [numberOfMovements, setNumberOfMovements] = useState('20');
   const soundObject = new Audio.Sound();
   const [validNumbers, setValidNumbers] = useState([]);
 
@@ -25,7 +25,7 @@ const HomePage = ({ navigation }) => {
 
   useEffect(() => {
     const numbers = [];
-    for (let i = 10; i <= 50; i++) {
+    for (let i = 10; i <= 40; i++) {
       numbers.push(i.toString());
     }
     setValidNumbers(numbers);
@@ -35,14 +35,6 @@ const HomePage = ({ navigation }) => {
     const parsedValue = parseInt(numberOfMovements, 10);
     navigation.navigate('Movements', { numberOfMovements: parsedValue });
   };
-
-  const [fontsLoaded] = useFonts({
-    RobotoMono: RobotoMono_300Light,
-  });
-
-  if (!fontsLoaded) {
-    return null; // or render a loading component
-  }
 
   const showProfile = () => {
     navigation.navigate('Profile',);
@@ -59,26 +51,16 @@ const HomePage = ({ navigation }) => {
           <Image source={require('../assets/images/icon_cube.png')} style={styles.cube_icon} />
       </View>
       <View style={styles.bottom_view}>
-          {/* <TextInput 
-            style={styles.input_text}
-            placeholder='Input number of movements'
-            keyboardType='numeric'
-            value={numberOfMovements}
-            onChangeText={setNumberOfMovements}
-          /> */}
           <View style={{
-            // justifyContent: 'center',
-            // alignItems: 'center',
             position: 'absolute',
             top: '20%',
             height: '40%',
-            // marginBottom: '10%',
             borderWidth: 0,
             borderColor: '#434C5E',
           }}>
             <ScrollPicker
               dataSource={validNumbers}
-              selectedIndex={24}
+              selectedIndex={9}
               itemHeight={46}
               wrapperHeight={150}
               wrapperWidth={350}
@@ -91,7 +73,6 @@ const HomePage = ({ navigation }) => {
               )}
               onValueChange={(data, selectedIndex) => {
                 setNumberOfMovements(data);
-                console.log(data);
                 playSound();
               }}
             />
