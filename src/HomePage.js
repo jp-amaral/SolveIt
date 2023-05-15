@@ -4,30 +4,35 @@ import { useFonts, RobotoMono_300Light } from '@expo-google-fonts/dev';
 import { styles } from '../styles';
 import React, { useState, useEffect, useRef } from 'react';
 import  Icon  from 'react-native-vector-icons/MaterialIcons';
+import ScrollPicker from 'react-native-wheel-scrollview-picker';
+import {Audio} from 'expo-av';
 
 const HomePage = ({ navigation }) => {
   
   const [numberOfMovements, setNumberOfMovements] = useState('');
+  const soundObject = new Audio.Sound();
+  const [validNumbers, setValidNumbers] = useState([]);
+
+  const playSound = async () => {
+    try {
+      await soundObject.loadAsync(require('../assets/sounds/tick.mp3'));
+      await soundObject.playAsync();
+      // Your sound is playing!
+    } catch (error) {
+      // An error occurred!
+    }
+  };
+
+  useEffect(() => {
+    const numbers = [];
+    for (let i = 10; i <= 50; i++) {
+      numbers.push(i.toString());
+    }
+    setValidNumbers(numbers);
+  }, []);
 
   const handlePress = () => {
-    // playSound();
-    if (numberOfMovements.trim() === '') {
-      Alert.alert('Invalid Input', 'Please enter a number of movements.');
-      return;
-    }
-
     const parsedValue = parseInt(numberOfMovements, 10);
-
-    if (isNaN(parsedValue)) {
-      Alert.alert('Invalid Input', 'Please enter a valid number of movements.');
-      return;
-    }
-
-    if (parsedValue < 4 || parsedValue > 50) {
-      Alert.alert('Invalid Input', 'Please enter a number of movements between 4 and 50.');
-      return;
-    }
-   
     navigation.navigate('Movements', { numberOfMovements: parsedValue });
   };
 
@@ -54,13 +59,43 @@ const HomePage = ({ navigation }) => {
           <Image source={require('../assets/images/icon_cube.png')} style={styles.cube_icon} />
       </View>
       <View style={styles.bottom_view}>
-          <TextInput 
+          {/* <TextInput 
             style={styles.input_text}
             placeholder='Input number of movements'
             keyboardType='numeric'
             value={numberOfMovements}
             onChangeText={setNumberOfMovements}
-          />
+          /> */}
+          <View style={{
+            // justifyContent: 'center',
+            // alignItems: 'center',
+            position: 'absolute',
+            top: '20%',
+            height: '40%',
+            // marginBottom: '10%',
+            borderWidth: 0,
+            borderColor: '#434C5E',
+          }}>
+            <ScrollPicker
+              dataSource={validNumbers}
+              selectedIndex={24}
+              itemHeight={46}
+              wrapperHeight={150}
+              wrapperWidth={350}
+              wrapperColor='#E5E9F0'
+              highlightColor='#b3b3b3'
+              renderItem={(data, index, isSelected) => (
+                <View>
+                  <Text style={isSelected ? styles.input_text_selected : styles.input_text}>{data}</Text>
+                </View>
+              )}
+              onValueChange={(data, selectedIndex) => {
+                setNumberOfMovements(data);
+                console.log(data);
+                playSound();
+              }}
+            />
+          </View>
         <Icon name="play-arrow" size={55} style={styles.play_icon} onPress={() => {handlePress()}}/>
       </View>
     </View>
