@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Alert, Text, SafeAreaView , FlatList, View, Image, StatusBar} from 'react-native'
+import { Alert, Text, SafeAreaView , FlatList, View, Image, StatusBar, TouchableOpacity} from 'react-native'
 import {styles} from './ProfileStyles'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TimeItem from './TimeItem';
 import {Audio} from 'expo-av';
+import Modal from 'react-native-modal';
+
 
 const Item = ({record, reverseTimings, setReverseTimings, setExistTimings, setBestTimeString, setAverageTime}) => (
     <TimeItem record={record} timings={reverseTimings} setReverseTimings={setReverseTimings} setExistTimings={setExistTimings} setBestTimeString={setBestTimeString} setAverageTime={setAverageTime}/>
@@ -19,10 +21,46 @@ const Profile = ({ navigation }) => {
     const flatListRef = useRef(null);
     const soundObject = new Audio.Sound();
     const [averageTime, setAverageTime] = useState('');
+    const [hasSeenModal, setHasSeenModal] = useState(false);
+    const [isModalVisible, setModalVisible] = useState(true);
 
     const home = () => {
         navigation.navigate('Home')
     }
+
+    useEffect(() => {
+        async function getHasSeenModal() {
+          try {
+            const value = await AsyncStorage.getItem('@hasSeenModalProfile')
+            if(value !== null) {
+              setHasSeenModal(value);
+              console.log("Modal hasn't been seen yet but exists ", value)
+            } else {
+              setHasSeenModal(false);
+              setModalVisible(true);
+              await AsyncStorage.setItem('@hasSeenModalProfile', 'false');
+              console.log("Modal has been seen")
+            }
+          } catch(e) {
+            // error reading value
+          }
+        }
+        getHasSeenModal();
+      }, []);
+
+    // Modal
+    const handleCloseModal = () => {
+        setModalVisible(false);
+        setHasSeenModal(true);
+        async function storeHasSeenModal() {
+          try {
+            await AsyncStorage.setItem('@hasSeenModalProfile', 'true');
+          } catch (error) {
+            console.log(error);
+          }
+        }
+        storeHasSeenModal();
+      };
 
     const handleScroll = () => {
         // Simulate scrolling by scrolling to a small offset
@@ -63,7 +101,17 @@ const Profile = ({ navigation }) => {
                 // Error removing data
                 console.log(error);
                 }
-            } 
+                // async function storeHasSeenModal() {
+                //   try {
+                //     await AsyncStorage.setItem('@hasSeenModalProfile', 'false');
+                //   } catch (error) {
+                //     console.log(error);
+                //   }
+                // }
+                // storeHasSeenModal();
+                // setHasSeenModal(false);
+                // setModalVisible(true);
+              } 
             }
         ]
         );
@@ -79,7 +127,11 @@ const Profile = ({ navigation }) => {
 
     function formatMillisecond(value) {
         if (typeof value === 'number') {
-            return (value / 100).toFixed(0);
+            let newValue = (value / 10).toFixed(0);
+            if (newValue < 10) {
+            return newValue;
+            }
+            return (value / 1000).toFixed(0);
         }
         return "0";
     }
@@ -132,13 +184,15 @@ const Profile = ({ navigation }) => {
         let totalTime = 0;
         for (let i = 0; i < timings.length; i++) {
             const { minutes, seconds, milliseconds } = timings[i].time;
-            const time = (minutes * 60 * 100) + (seconds * 100) + milliseconds;
+            console.log(minutes, seconds, milliseconds);
+            const time = (minutes * 60 * 1000) + (seconds * 1000) + milliseconds;
             totalTime += time;
         }
-        const avg = totalTime / timings.length;
-        const averageMinutes = Math.floor(avg / (60 * 100));
-        const averageSeconds = Math.floor((avg % (60 * 100)) / 100);
-        const averageMilliseconds = Math.floor((avg % (60 * 100)) % 100);
+        console.log(totalTime)
+        const avgTotalTime = totalTime / timings.length;
+        const averageMinutes = Math.floor(avgTotalTime / 60000);
+        const averageSeconds = Math.floor((avgTotalTime % 60000) / 1000);
+        const averageMilliseconds = Math.floor((avgTotalTime % 60000) % 1000);
         const averageTimeString = `${formatMinutes(averageMinutes)}:${formatSeconds(averageSeconds)}.${formatMillisecond(averageMilliseconds)}`;
         setAverageTime(averageTimeString);
         console.log(averageTimeString);
@@ -156,12 +210,15 @@ const Profile = ({ navigation }) => {
     useEffect(() => {
         getBestTiming();
         getAverageTiming();
+        setModalVisible(true);
+
     }, []);
 
     // To retrieve all timings
     const retrieveTimings = async () => {
         try {
         const timings = await AsyncStorage.getItem('timings');
+        const hasSeenModal = await AsyncStorage.getItem('@hasSeenModalProfile');
         
         if (timings !== null) {
             setExistTimings(true);
@@ -184,6 +241,26 @@ const Profile = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar style="auto" />
+            {(hasSeenModal === 'false' || hasSeenModal === false) && <Modal
+              animationType="fade"
+              transparent={true}
+              visible={isModalVisible}
+              onRequestClose={() => {
+                handleCloseModal();
+              }}
+            ><View style={styles.centeredView}>
+            <View style={styles.modalView}>
+                <TouchableOpacity style={styles.modalCloseIcon} onPress={() => {handleCloseModal()}}>
+                  <Icon name="close" size={20} />
+                </TouchableOpacity>
+                <Text style={styles.modalTextTitle}>Welcome to the profile</Text>
+                <View style={styles.modalLine}></View>
+                <Text style={styles.modalText}>Here will be the times you save</Text>
+                <Text style={styles.modalText}>To delete a certain record, <Text style={{fontWeight:'bold'}}>press and hold</Text> on it</Text>
+                <Text style={styles.modalText}>To delete all the records, press the <Text style={{fontWeight:'bold'}}>trash icon</Text> on top</Text>
+              </View>
+            </View>
+          </Modal>}
             <Icon name="arrow-back-ios" size={30} style={styles.back_icon} onPress={() => {home()}}/>
             {existTimings &&  <Icon name="delete-outline" size={30} style={styles.delete_icon} onPress={() => {clearTimings()}}/>}
             {existTimings ? <Text style={styles.main_text}>Your best time</Text> : <Text style={styles.main_text_alt}>No times yet!</Text>}

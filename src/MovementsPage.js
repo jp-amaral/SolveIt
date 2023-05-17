@@ -17,7 +17,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { activateKeepAwakeAsync , deactivateKeepAwake } from 'expo-keep-awake';
 import Toast from 'react-native-toast-message';
 import Modal from 'react-native-modal';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 const Item = ({value}) => (
   <CubeItem label={value} />
@@ -90,13 +89,13 @@ const MovementsPage = ({ route, navigation }) => {
   useEffect(() => {
     async function getHasSeenModal() {
       try {
-        const value = await AsyncStorage.getItem('@hasSeenModal')
+        const value = await AsyncStorage.getItem('@hasSeenModalTimer')
         console.log(value);
         if(value !== null) {
           setHasSeenModal(value);
         } else {
           setHasSeenModal(false);
-          await AsyncStorage.setItem('@hasSeenModal', 'false');
+          await AsyncStorage.setItem('@hasSeenModalTimer', 'false');
         }
       } catch(e) {
         // error reading value
@@ -270,7 +269,7 @@ const MovementsPage = ({ route, navigation }) => {
       setViews(generateMovements(numberOfMovements));
       async function storeHasSeenModal() {
         try {
-          await AsyncStorage.setItem('@hasSeenModal', 'false');
+          await AsyncStorage.setItem('@hasSeenModalTimer', 'false');
         } catch (error) {
           console.log(error);
         }
@@ -278,7 +277,7 @@ const MovementsPage = ({ route, navigation }) => {
       storeHasSeenModal();
       async function getHasSeenModal() {
         try {
-          await AsyncStorage.getItem('@hasSeenModal').then((value) => {
+          await AsyncStorage.getItem('@hasSeenModalTimer').then((value) => {
             console.log(value);
           });
         } catch (error) {
@@ -313,7 +312,7 @@ const MovementsPage = ({ route, navigation }) => {
     
     const startTimerToast = () => {
       console.log(hasSeenModal)
-      setModalVisible(false);
+      setModalVisible(true);
       if(hasSeenModal === 'true' || hasSeenModal === true){
         console.log('start timer')
         activateKeepAwakeAsync();
@@ -478,7 +477,7 @@ const MovementsPage = ({ route, navigation }) => {
       setHasSeenModal(true);
       async function storeHasSeenModal() {
         try {
-          await AsyncStorage.setItem('@hasSeenModal', 'true');
+          await AsyncStorage.setItem('@hasSeenModalTimer', 'true');
         } catch (error) {
           console.log(error);
         }

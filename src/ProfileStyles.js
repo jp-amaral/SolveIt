@@ -104,4 +104,52 @@ export const styles = StyleSheet.create({
     marginBottom: '10%',
     tintColor: '#434C5E',
   },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // This will give a semi-transparent dark background
+    width: '120%',
+    height: '140%',
+    position: 'absolute',
+    top: '-20%',
+    left: '-10%',
+    padding: 10,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  modalTextTitle: {
+    textAlign: "left",
+    fontSize: 30,
+    fontWeight: 'bold',
+    paddingBottom: 30,
+  },
+  modalText: {
+    textAlign: "left",
+    fontSize: 20,
+    paddingBottom: 20,
+  },
+  modalCloseIcon: {
+    color: '#434C5E',
+    position: 'absolute',
+    right: 0,
+    // borderWidth: 1,
+    // borderColor: '#434C5E',
+    width: 60,
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
