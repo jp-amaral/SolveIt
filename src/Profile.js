@@ -6,8 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import TimeItem from './TimeItem';
 import {Audio} from 'expo-av';
 
-const Item = ({record, reverseTimings, setReverseTimings, setExistTimings, setBestTimeString}) => (
-    <TimeItem record={record} timings={reverseTimings} setReverseTimings={setReverseTimings} setExistTimings={setExistTimings} setBestTimeString={setBestTimeString}/>
+const Item = ({record, reverseTimings, setReverseTimings, setExistTimings, setBestTimeString, setAverageTime}) => (
+    <TimeItem record={record} timings={reverseTimings} setReverseTimings={setReverseTimings} setExistTimings={setExistTimings} setBestTimeString={setBestTimeString} setAverageTime={setAverageTime}/>
   );
 
 const Profile = ({ navigation }) => {
@@ -18,6 +18,7 @@ const Profile = ({ navigation }) => {
     const [reverseTimings, setReverseTimings] = useState([]);
     const flatListRef = useRef(null);
     const soundObject = new Audio.Sound();
+    const [averageTime, setAverageTime] = useState('');
 
     const home = () => {
         navigation.navigate('Home')
@@ -66,6 +67,7 @@ const Profile = ({ navigation }) => {
             }
         ]
         );
+        console.log("Clearing timings");
     };
     function formatMinutes(value) {
         return value.toString();
@@ -117,10 +119,43 @@ const Profile = ({ navigation }) => {
         }
     };
 
+    const getAverageTiming = async () => {
+        try {
+        const timings = await retrieveTimings();
+        //timings is a JSON object, loop through it to and add it to the reverseTimings array
+        let reverseTimings = [];
+        for (let i = timings.length - 1; i >= 0; i--) {
+            reverseTimings.push(timings[i]);
+        }
+        console.log(reverseTimings);
+        //loop through the timings and get the average
+        let totalTime = 0;
+        for (let i = 0; i < timings.length; i++) {
+            const { minutes, seconds, milliseconds } = timings[i].time;
+            const time = (minutes * 60 * 100) + (seconds * 100) + milliseconds;
+            totalTime += time;
+        }
+        const avg = totalTime / timings.length;
+        const averageMinutes = Math.floor(avg / (60 * 100));
+        const averageSeconds = Math.floor((avg % (60 * 100)) / 100);
+        const averageMilliseconds = Math.floor((avg % (60 * 100)) % 100);
+        const averageTimeString = `${formatMinutes(averageMinutes)}:${formatSeconds(averageSeconds)}.${formatMillisecond(averageMilliseconds)}`;
+        setAverageTime(averageTimeString);
+        console.log(averageTimeString);
+        return averageTimeString;
+        } catch (error) {
+        // Error retrieving data
+        console.log(error);
+        return null;
+        }
+    };
+
+        
+
     //get the best timing
     useEffect(() => {
         getBestTiming();
-        // handleScroll();
+        getAverageTiming();
     }, []);
 
     // To retrieve all timings
@@ -154,17 +189,22 @@ const Profile = ({ navigation }) => {
             {existTimings ? <Text style={styles.main_text}>Your best time</Text> : <Text style={styles.main_text_alt}>No times yet!</Text>}
             {!existTimings && <Image style={styles.image} source={require('../assets/images/empty-box-icon.png')} />}
             {existTimings &&  <Text style={styles.time_text}>{bestTimeString}</Text> }
+            {existTimings && <View style={styles.line}></View>}
+            {existTimings && <Text style={styles.average_text}>Average time</Text>}
+            {existTimings && <Text style={styles.avg_time_text}>{averageTime}</Text>}
+            {existTimings && <View style={styles.line2}></View>}
             {existTimings && <Text style={styles.previous_text}>Previous times</Text>}
             <View style={styles.list}>
                 <FlatList
                     contentContainerStyle={styles.flat_list}
                     ref={flatListRef}
                     data={reverseTimings}
-                    renderItem={({item}) => <Item record={item} reverseTimings={reverseTimings} setReverseTimings={setReverseTimings} setExistTimings={setExistTimings} setBestTimeString={setBestTimeString}/>}
+                    renderItem={({item}) => <Item record={item} reverseTimings={reverseTimings} setReverseTimings={setReverseTimings} setExistTimings={setExistTimings} setBestTimeString={setBestTimeString} setAverageTime={setAverageTime}/>}
                     keyExtractor={(item, index) => index.toString()}
                     >
                 </FlatList>
             </View>
+            
         </SafeAreaView>
     )
 }

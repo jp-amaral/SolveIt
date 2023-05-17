@@ -9,9 +9,10 @@ import {
 import { styles } from './TimeItemStyles'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const TimeItem = ({ record , timings, setReverseTimings, setExistTimings, setBestTimeString}) => {
+const TimeItem = ({ record , timings, setReverseTimings, setExistTimings, setBestTimeString, setAverageTime}) => {
 
   const [hide, setHide] = useState(false)
+  const [timingsJson, setTimingsJson] = useState([]);
 
   function formatMinutes(value) {
       return value.toString();
@@ -99,11 +100,63 @@ const TimeItem = ({ record , timings, setReverseTimings, setExistTimings, setBes
                             console.log(error);
                         }
                     }
+                    getAverageTiming();
                   }
               }
           ]
       );
   }
+  // To retrieve all timings
+  const retrieveTimings = async () => {
+    try {
+    const timings = await AsyncStorage.getItem('timings');
+    
+    if (timings !== null) {
+        setExistTimings(true);
+        setTimingsJson(JSON.parse(timings));
+        return JSON.parse(timings);
+    } else {
+        console.log("Error: Timings is null");
+        return null;
+    }
+    } catch (error) {
+    // Error retrieving data
+      console.log(error);
+      return null;
+    }
+  };
+
+  const getAverageTiming = async () => {
+    try {
+      const timings = await retrieveTimings();
+      //timings is a JSON object, loop through it to and add it to the reverseTimings array
+      let reverseTimings = [];
+      for (let i = timings.length - 1; i >= 0; i--) {
+          reverseTimings.push(timings[i]);
+      }
+      console.log(reverseTimings);
+      //loop through the timings and get the average
+      let totalTime = 0;
+      for (let i = 0; i < timings.length; i++) {
+          const { minutes, seconds, milliseconds } = timings[i].time;
+          const time = (minutes * 60 * 100) + (seconds * 100) + milliseconds;
+          totalTime += time;
+      }
+      const avg = totalTime / timings.length;
+      const averageMinutes = Math.floor(avg / (60 * 100));
+      const averageSeconds = Math.floor((avg % (60 * 100)) / 100);
+      const averageMilliseconds = Math.floor((avg % (60 * 100)) % 100);
+      const averageTimeString = `${formatMinutes(averageMinutes)}:${formatSeconds(averageSeconds)}.${formatMillisecond(averageMilliseconds)}`;
+      setAverageTime(averageTimeString);
+      console.log(averageTimeString);
+      return averageTimeString;
+    } catch (error) {
+      // Error retrieving data
+      console.log(error);
+      return null;
+    }
+  };
+
 
   const bestTimeString = `${formatMinutes(record.time.minutes)}:${formatSeconds(record.time.seconds)}.${formatMillisecond(record.time.milliseconds)}`;
 

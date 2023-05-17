@@ -31,6 +31,9 @@ const App = () => {
     loadResourcesAndDataAsync();
   }, []);
 
+  if (!isReady) {
+    return <AppLoading />;
+  }
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">

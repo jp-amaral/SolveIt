@@ -60,7 +60,7 @@ const HomePage = ({ navigation }) => {
           }}>
             <ScrollPicker
               dataSource={validNumbers}
-              selectedIndex={9}
+              selectedIndex={10}
               itemHeight={46}
               wrapperHeight={150}
               wrapperWidth={350}
