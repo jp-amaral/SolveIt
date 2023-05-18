@@ -1,19 +1,24 @@
 # SolveIt
-Rubik's Cube Scrambler
 
-#TODO
-DONE 1 - Fix the bug that moves are not showing the correct image
-DONE 2 - Add a timer 
-    -> At the end of the movements page, add a button to start the timer
-    -> This button then fills the screen with a timer and a large button to stop the timer
-    -> When the timer is stopped, the time is saved internally and the large screen goes back to the movements page 
-DONE 3 - Add a profile page
-    -> This page will have a list of all the times saved, with the best time highlighted
-    -> This page will have a button to delete all the times
-    -> This page will have a button to delete a specific time
-    NOT DONE-> This page will have a graph of the times saved (last 10, last 20, last 50, last 100, all)
-4 - Add a dark theme toggle
-    -> This just changes the background color of the app in the movements page (including the timer) and the profile page
-    -> Also changes the color of the cubes in the movements page
-5- - Fix sound effect
-    
+SolveIt is an interactive Rubik's Cube application that allows you to generate randomized movements to scramble the cube and challenge yourself to solve it as quickly as possible. With a sleek and intuitive user interface, SolveIt provides an engaging experience for both Rubik's Cube enthusiasts and beginners alike.
+
+## Features
+
+- **Random Scrambling**: Generate a specified number of random movements to scramble the Rubik's Cube, ensuring a unique challenge every time.
+- **Timer**: Start the timer and test your solving skills by racing against the clock to complete the Rubik's Cube as fast as possible.
+- **Profile Page**: Keep track of your solving times with the built-in profile page, which displays your best time and average time across multiple solves.
+- **User-Friendly Interface**: Enjoy a visually appealing and easy-to-use interface that enhances your solving experience.
+
+## Contributing
+
+I welcome contributions from the community to enhance SolveIt and make it even better. If you have any ideas, suggestions, or bug reports, please open an issue or submit a pull request.
+
+## License
+
+SolveIt is released under the [MIT License](https://opensource.org/licenses/MIT).
+
+## Acknowledgments
+
+SolveIt was inspired by the fascinating world of Rubik's Cube solving and the desire to provide an enjoyable solving experience for users of all skill levels. We would like to thank the Rubik's Cube community for their continuous support and inspiration.
+
+Happy solving!
