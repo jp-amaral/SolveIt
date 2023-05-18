@@ -23,10 +23,9 @@ const TimeItem = ({ record , timings, setReverseTimings, setExistTimings, setBes
   }
 
   function formatMillisecond(value) {
-      if (typeof value === 'number') {
-          return (value / 100).toFixed(0);
-      }
-      return "0";
+    value = value.toString().padStart(3, "0");
+    value = value.toString().slice(0, 2);
+    return value;
   }
 
   // Function to compare two times
@@ -128,34 +127,36 @@ const TimeItem = ({ record , timings, setReverseTimings, setExistTimings, setBes
 
   const getAverageTiming = async () => {
     try {
-      const timings = await retrieveTimings();
-      //timings is a JSON object, loop through it to and add it to the reverseTimings array
-      let reverseTimings = [];
-      for (let i = timings.length - 1; i >= 0; i--) {
-          reverseTimings.push(timings[i]);
-      }
-      console.log(reverseTimings);
-      //loop through the timings and get the average
-      let totalTime = 0;
-      for (let i = 0; i < timings.length; i++) {
-          const { minutes, seconds, milliseconds } = timings[i].time;
-          const time = (minutes * 60 * 100) + (seconds * 100) + milliseconds;
-          totalTime += time;
-      }
-      const avg = totalTime / timings.length;
-      const averageMinutes = Math.floor(avg / (60 * 100));
-      const averageSeconds = Math.floor((avg % (60 * 100)) / 100);
-      const averageMilliseconds = Math.floor((avg % (60 * 100)) % 100);
-      const averageTimeString = `${formatMinutes(averageMinutes)}:${formatSeconds(averageSeconds)}.${formatMillisecond(averageMilliseconds)}`;
-      setAverageTime(averageTimeString);
-      console.log(averageTimeString);
-      return averageTimeString;
-    } catch (error) {
-      // Error retrieving data
-      console.log(error);
-      return null;
+    const timings = await retrieveTimings();
+    //timings is a JSON object, loop through it to and add it to the reverseTimings array
+    let reverseTimings = [];
+    for (let i = timings.length - 1; i >= 0; i--) {
+        reverseTimings.push(timings[i]);
     }
-  };
+    console.log(reverseTimings);
+    //loop through the timings and get the average
+    let totalTime = 0;
+    for (let i = 0; i < timings.length; i++) {
+        const { minutes, seconds, milliseconds } = timings[i].time;
+        console.log(minutes, seconds, milliseconds);
+        const time = (minutes * 60 * 1000) + (seconds * 1000) + milliseconds;
+        totalTime += time;
+    }
+    console.log(totalTime)
+    const avgTotalTime = totalTime / timings.length;
+    const averageMinutes = Math.floor(avgTotalTime / 60000);
+    const averageSeconds = Math.floor((avgTotalTime % 60000) / 1000);
+    const averageMilliseconds = Math.floor((avgTotalTime % 60000) % 1000);
+    const averageTimeString = `${formatMinutes(averageMinutes)}:${formatSeconds(averageSeconds)}.${formatMillisecond(averageMilliseconds)}`;
+    setAverageTime(averageTimeString);
+    console.log(averageTimeString);
+    return averageTimeString;
+    } catch (error) {
+    // Error retrieving data
+    console.log(error);
+    return null;
+    }
+};
 
 
   const bestTimeString = `${formatMinutes(record.time.minutes)}:${formatSeconds(record.time.seconds)}.${formatMillisecond(record.time.milliseconds)}`;

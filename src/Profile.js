@@ -7,7 +7,6 @@ import TimeItem from './TimeItem';
 import {Audio} from 'expo-av';
 import Modal from 'react-native-modal';
 
-
 const Item = ({record, reverseTimings, setReverseTimings, setExistTimings, setBestTimeString, setAverageTime}) => (
     <TimeItem record={record} timings={reverseTimings} setReverseTimings={setReverseTimings} setExistTimings={setExistTimings} setBestTimeString={setBestTimeString} setAverageTime={setAverageTime}/>
   );
@@ -23,6 +22,7 @@ const Profile = ({ navigation }) => {
     const [averageTime, setAverageTime] = useState('');
     const [hasSeenModal, setHasSeenModal] = useState(false);
     const [isModalVisible, setModalVisible] = useState(true);
+    const [hasLoaded, setHasLoaded] = useState(false);
 
     const home = () => {
         navigation.navigate('Home')
@@ -34,13 +34,14 @@ const Profile = ({ navigation }) => {
             const value = await AsyncStorage.getItem('@hasSeenModalProfile')
             if(value !== null) {
               setHasSeenModal(value);
-              console.log("Modal hasn't been seen yet but exists ", value)
+              console.log("Modal exists ", value)
             } else {
               setHasSeenModal(false);
               setModalVisible(true);
               await AsyncStorage.setItem('@hasSeenModalProfile', 'false');
-              console.log("Modal has been seen")
+              console.log("Modal hasn't been seen")
             }
+            setHasLoaded(true);
           } catch(e) {
             // error reading value
           }
@@ -61,11 +62,6 @@ const Profile = ({ navigation }) => {
         }
         storeHasSeenModal();
       };
-
-    const handleScroll = () => {
-        // Simulate scrolling by scrolling to a small offset
-        flatListRef.current?.scrollToOffset({ offset: 10 });
-    };
 
     const playSound = async () => {
         try {
@@ -101,16 +97,6 @@ const Profile = ({ navigation }) => {
                 // Error removing data
                 console.log(error);
                 }
-                // async function storeHasSeenModal() {
-                //   try {
-                //     await AsyncStorage.setItem('@hasSeenModalProfile', 'false');
-                //   } catch (error) {
-                //     console.log(error);
-                //   }
-                // }
-                // storeHasSeenModal();
-                // setHasSeenModal(false);
-                // setModalVisible(true);
               } 
             }
         ]
@@ -126,14 +112,9 @@ const Profile = ({ navigation }) => {
     }
 
     function formatMillisecond(value) {
-        if (typeof value === 'number') {
-            let newValue = (value / 10).toFixed(0);
-            if (newValue < 10) {
-            return newValue;
-            }
-            return (value / 1000).toFixed(0);
-        }
-        return "0";
+      value = value.toString().padStart(3, "0");
+      value = value.toString().slice(0, 2);
+      return value;
     }
 
     // To get the best timing
@@ -235,14 +216,17 @@ const Profile = ({ navigation }) => {
         }
     };
         
-
+    if(!hasLoaded) {
+      console.log('loading')
+      return
+    }
     
 
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar style="auto" />
             {(hasSeenModal === 'false' || hasSeenModal === false) && <Modal
-              animationType="fade"
+              animationType="none"
               transparent={true}
               visible={isModalVisible}
               onRequestClose={() => {
@@ -262,15 +246,15 @@ const Profile = ({ navigation }) => {
             </View>
           </Modal>}
             <Icon name="arrow-back-ios" size={30} style={styles.back_icon} onPress={() => {home()}}/>
-            {existTimings &&  <Icon name="delete-outline" size={30} style={styles.delete_icon} onPress={() => {clearTimings()}}/>}
+            {existTimings && hasLoaded && <Icon name="delete-outline" size={30} style={styles.delete_icon} onPress={() => {clearTimings()}}/>}
             {existTimings ? <Text style={styles.main_text}>Your best time</Text> : <Text style={styles.main_text_alt}>No times yet!</Text>}
-            {!existTimings && <Image style={styles.image} source={require('../assets/images/empty-box-icon.png')} />}
-            {existTimings &&  <Text style={styles.time_text}>{bestTimeString}</Text> }
-            {existTimings && <View style={styles.line}></View>}
-            {existTimings && <Text style={styles.average_text}>Average time</Text>}
-            {existTimings && <Text style={styles.avg_time_text}>{averageTime}</Text>}
-            {existTimings && <View style={styles.line2}></View>}
-            {existTimings && <Text style={styles.previous_text}>Previous times</Text>}
+            {!existTimings && hasLoaded && <Image style={styles.image} source={require('../assets/images/empty-box-icon.png')} />}
+            {existTimings && hasLoaded && <Text style={styles.time_text}>{bestTimeString}</Text> }
+            {existTimings && hasLoaded && <View style={styles.line}></View>}
+            {existTimings && hasLoaded && <Text style={styles.average_text}>Average time</Text>}
+            {existTimings && hasLoaded && <Text style={styles.avg_time_text}>{averageTime}</Text>}
+            {existTimings && hasLoaded && <View style={styles.line2}></View>}
+            {existTimings && hasLoaded && <Text style={styles.previous_text}>Previous times</Text>}
             <View style={styles.list}>
                 <FlatList
                     contentContainerStyle={styles.flat_list}

@@ -152,4 +152,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  gradientOverlay: {
+    height: 100, // Adjust the height as needed
+  },
 });

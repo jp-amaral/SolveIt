@@ -89,6 +89,10 @@ export const styles = StyleSheet.create({
       right: 0,
       paddingRight: 24,
     },
+    play_icon: {
+      color: '#434C5E',
+      alignSelf: 'center',
+    },
     timer_icon: {
       color: '#434C5E',
       width: 100,

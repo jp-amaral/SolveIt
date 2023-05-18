@@ -25,7 +25,7 @@ const HomePage = ({ navigation }) => {
 
   useEffect(() => {
     const numbers = [];
-    for (let i = 10; i <= 40; i++) {
+    for (let i = 10; i <= 50; i++) {
       numbers.push(i.toString());
     }
     setValidNumbers(numbers);
@@ -60,7 +60,7 @@ const HomePage = ({ navigation }) => {
           }}>
             <ScrollPicker
               dataSource={validNumbers}
-              selectedIndex={10}
+              selectedIndex={15}
               itemHeight={46}
               wrapperHeight={150}
               wrapperWidth={350}

@@ -17,6 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { activateKeepAwakeAsync , deactivateKeepAwake } from 'expo-keep-awake';
 import Toast from 'react-native-toast-message';
 import Modal from 'react-native-modal';
+import { Stopwatch } from 'react-native-stopwatch-timer'
 
 const Item = ({value}) => (
   <CubeItem label={value} />
@@ -85,16 +86,20 @@ const MovementsPage = ({ route, navigation }) => {
   const flatListRef = useRef(null);
   const [isModalVisible, setModalVisible] = useState(true);
   const [hasSeenModal, setHasSeenModal] = useState(false);
+  let scrollOffset = 0; // Initialize scroll offset
+  let isScrolling = false; // Initialize scroll state
+  let scrollIntervalId = null;
 
   useEffect(() => {
     async function getHasSeenModal() {
       try {
         const value = await AsyncStorage.getItem('@hasSeenModalTimer')
-        console.log(value);
         if(value !== null) {
           setHasSeenModal(value);
+          console.log("Not first time loading movements page")
         } else {
           setHasSeenModal(false);
+          console.log("First time loading movements page")
           await AsyncStorage.setItem('@hasSeenModalTimer', 'false');
         }
       } catch(e) {
@@ -102,6 +107,7 @@ const MovementsPage = ({ route, navigation }) => {
       }
     }
     getHasSeenModal();
+    setModalVisible(false);
   }, []);
   const toastConfig = {
     custom: ({ ...rest }) => (
@@ -119,48 +125,54 @@ const MovementsPage = ({ route, navigation }) => {
           marginBottom: 10,
         }}
         >
-          <TouchableOpacity onPress={() => finishTimer() } style={{
-              width: '100%',
-              height: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
+          <TouchableOpacity onPress={() => finishTimer() } style={{width: '100%',height: '100%',alignItems: 'center',justifyContent: 'center'}}>
           <Text style={styles.timer_text}>
-            {formatMinutes(time.minutes)}:{formatSeconds(time.seconds)}:{formatMillisecond(time.milliseconds)}
+            <Stopwatch msecs start={isRunning} reset={!showtimer} options={options} getTime={getFormattedTime} />
           </Text>
           </TouchableOpacity>
       </Animated.View>
     )
   };
-
-  useEffect(() => {
-    let timer;
-
-    if (isRunning) {
-      timer = setInterval(() => {
-        setTime((prevTime) => {
-          const newMilliseconds = prevTime.milliseconds + 100;
-          const newSeconds = prevTime.seconds + Math.floor(newMilliseconds / 1000);
-          const newMinutes = prevTime.minutes + Math.floor(newSeconds / 60);
-
-          return {
-            minutes: newMinutes,
-            seconds: newSeconds % 60,
-            milliseconds: newMilliseconds % 1000,
-          };
-        });
-      }, 100);
+  const options = {
+    container: {
+      width: '100%',
+    },
+    text: {
+      fontFamily: 'RobotoMono',
+      fontSize: 82,
+      color: '#E5E9F0',
+      fontStyle: 'normal',
+      fontWeight: '300',
+      textAlign: 'center',
+      width: '100%',
+      paddingBottom: 5,
     }
+  };
+  getFormattedTime = (time) => {
+    this.currentTime = time;
+  };
 
-    //make sure that the timer doesn't pass 60 minutes
-    if (time.minutes >= 60) {
-      finishTimer();
+  //AutoScroll
+  // Function to start scrolling
+  const startAutoScroll = () => {
+    if (!isScrolling) {
+      console.log("Start autoscroll");
+      isScrolling = true;
+      scrollIntervalId = setInterval(() => {
+        scrollOffset += 180; // Update scroll offset. You can control speed here.
+        flatListRef.current.scrollToOffset({ animated: true, offset: scrollOffset });
+      }, 2000); // Control the scroll interval. Lower value = faster scroll.
     }
+  };
 
-    return () => clearInterval(timer);
-  }, [isRunning]);
-
-  //sounds
+  // Function to stop scrolling
+  const stopAutoScroll = () => {
+    isScrolling = false;
+    if (scrollIntervalId !== null) {
+      clearInterval(scrollIntervalId);
+      scrollOffset = 0;
+    }
+  };
 
   //Refresh sound
   const playSound = async () => {
@@ -184,11 +196,8 @@ const MovementsPage = ({ route, navigation }) => {
     }
   };
 
-
   // Animation
-
   const opacityAnim = useRef(new Animated.Value(1)).current; // Initial value for scale: 1
-  
   const animateIcon = () => {
     Animated.sequence([
         Animated.timing(opacityAnim, {
@@ -203,7 +212,6 @@ const MovementsPage = ({ route, navigation }) => {
         })
     ]).start();
   };
-
   const colorAnim = useRef(new Animated.Value(0)).current;
   const isGreen = useRef(false); // to keep track of color state
   const [saved, setSaved] = useState(false); // to keep track of color state
@@ -223,7 +231,6 @@ const MovementsPage = ({ route, navigation }) => {
 
   //Looping animation
   const [fadeAnim] = useState(new Animated.Value(1)); // Initial value for opacity: 0
-
   const startAnimation = () => {
     Animated.loop(
         Animated.sequence([
@@ -239,8 +246,7 @@ const MovementsPage = ({ route, navigation }) => {
             }),
         ]),
     ).start();
-};
-
+  };
   useEffect(() => {
     if (timerFinished) {
         startAnimation();
@@ -251,55 +257,34 @@ const MovementsPage = ({ route, navigation }) => {
 
 
   //New movements
-    const handleScroll = () => {
-      flatListRef.current?.scrollToOffset({ offset: 30 });
-    };
-    
     const { numberOfMovements } = route.params;
     const [views, setViews] = useState([]);
 
     useEffect(() => {
-      handleScroll();
       setViews(generateMovements(numberOfMovements));
     }, []);
 
     const handleRefresh = () => {
-      console.log("reseting modal")
       playSound();
       setViews(generateMovements(numberOfMovements));
-      async function storeHasSeenModal() {
-        try {
-          await AsyncStorage.setItem('@hasSeenModalTimer', 'false');
-        } catch (error) {
-          console.log(error);
-        }
-      }
-      storeHasSeenModal();
-      async function getHasSeenModal() {
-        try {
-          await AsyncStorage.getItem('@hasSeenModalTimer').then((value) => {
-            console.log(value);
-          });
-        } catch (error) {
-          console.log(error);
-        }
-      }
-      getHasSeenModal();
-      
-      setHasSeenModal('false');
-      setModalVisible(true);
     };
 
     const savedRef = useRef(saved);
     useEffect(() => {
       savedRef.current = saved;
-      console.log('Current value of savedRef: ', savedRef.current);
     }, [saved]);
 
-    const timeRef = useRef(time);
+    const seenModalRef = useRef(hasSeenModal);
     useEffect(() => {
-      timeRef.current = time;
-    }, [time]);
+      seenModalRef.current = hasSeenModal;
+    }, [hasSeenModal]);
+
+    const showtimerRef = useRef(showtimer);
+    useEffect(() => {
+      showtimerRef.current = showtimer;
+      console.log("showtimeref: ",showtimerRef.current)
+    }, [showtimer]);
+
 
     const finishTimer = () => {
       playSoundStart();
@@ -308,19 +293,20 @@ const MovementsPage = ({ route, navigation }) => {
       animateBackground();
       deactivateKeepAwake();
       setSaved(!saved);
+      console.log(currentTime)
     };
     
-    const startTimerToast = () => {
+    const startTimer = () => {
       console.log(hasSeenModal)
       setModalVisible(true);
       if(hasSeenModal === 'true' || hasSeenModal === true){
-        console.log('start timer')
         activateKeepAwakeAsync();
         playSoundStart();
-        setTime({ minutes: 0, seconds: 0, milliseconds: 0 });
+        // setTime({ minutes: 0, seconds: 0, milliseconds: 0 });
         setIsRunning(true);
         setShowTimer(true);
         animateBackground();
+        console.log('start timer')
         Toast.show({
           type: 'custom',
           visibilityTime: 1200,
@@ -331,12 +317,14 @@ const MovementsPage = ({ route, navigation }) => {
             setSaved(false);
           },
           onHide: () => {
-            console.log("Closed toast saving: ", savedRef.current);
             if(savedRef.current){
               saveCurrentTime(time);
             }
+            console.log("colse toast")
+            setIsRunning(false);
             setShowTimer(false);
             setTimerFinished(false);
+            setSaved(false);
             isGreen.current = 0;
           },
           bottomOffset: 10,
@@ -344,31 +332,11 @@ const MovementsPage = ({ route, navigation }) => {
       }
     };
 
-    const closeToast = () => {
-      Toast.hide();
-    };
-
     const returnHome = () => {
         navigation.navigate('Home');
     };
 
-    function formatMinutes(value) {
-      return value.toString();
-    }
-
-    function formatSeconds(value) {
-      return value < 10 ? `0${value}` : value.toString();
-    }
-
-    function formatMillisecond(value) {
-      if (typeof value === 'number') {
-          return (value / 100).toFixed(0);
-      }
-      return "0";
-    }
-  
     //Save times
-
     const saveTiming = async (newTiming) => {
       try {
         // const timings = await retrieveTimings();
@@ -408,39 +376,22 @@ const MovementsPage = ({ route, navigation }) => {
       }
     };
     
-
     const saveCurrentTime = async () => {
       const date = new Date();
       const dateString = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`; // Format the date as "day-month-year"
-      console.log(timeRef.current)
-    
+      const timeString = currentTime.split(':'); // Split the time string into an array of [minutes, seconds, milliseconds]
       const newTiming = {
         date: dateString,
-        time: timeRef.current,
+        time: {
+          minutes: parseInt(timeString[0]),
+          seconds: parseInt(timeString[1]),
+          milliseconds: parseInt(timeString[2])*10
+        },
         isBest: false
       };
-      await saveTiming(newTiming);
-    };
-
-    const deleteCurrentTime = async () => {
-      try {
-        // Retrieve all timings
-        const timingsJSON = await AsyncStorage.getItem('timings');
-        const timings = timingsJSON != null ? JSON.parse(timingsJSON) : [];
-        
-        // Check if there are timings
-        if (timings.length > 0) {
-          // Remove the last timing
-          timings.pop();
     
-          // Save the updated timings back to AsyncStorage
-          // console.log(timings);
-          await AsyncStorage.setItem('timings', JSON.stringify(timings));
-        }
-      } catch (error) {
-        // Error deleting data
-        console.log(error);
-      }
+      console.log(newTiming);
+      await saveTiming(newTiming);
     };
 
     // Function to compare two times
@@ -461,6 +412,7 @@ const MovementsPage = ({ route, navigation }) => {
     useEffect(() => {
       const backAction = () => {
         Toast.hide();
+        stopAutoScroll();
       };
       
       const backHandler = BackHandler.addEventListener(
@@ -489,14 +441,14 @@ const MovementsPage = ({ route, navigation }) => {
         
         <SafeAreaView style={styles.container}>
           <StatusBar style="auto" />
-            {hasSeenModal === 'false' && <Modal
+            {seenModalRef.current === false && <Modal
               animationType="fade"
               transparent={true}
-              visible={!isModalVisible}
+              visible={isModalVisible}
               onRequestClose={() => {
                 handleCloseModal();
               }}
-            >
+              >
               <View style={styles.centeredView}>
                 <View style={styles.modalView}>
                   <TouchableOpacity style={styles.modalCloseIcon} onPress={() => {handleCloseModal()}}>
@@ -508,6 +460,7 @@ const MovementsPage = ({ route, navigation }) => {
                   <Text style={styles.modalText}><Text style={{fontWeight:'bold'}}>2. </Text>Tap the timer again to <Text style={{fontWeight:'bold'}}>stop</Text> and the background will change to <Text style={{color:'#A3BE8C'}}>green</Text>, indicating that the time will be <Text style={{fontWeight:'bold'}}>saved</Text></Text>
                   <Text style={styles.modalText}><Text style={{fontWeight:'bold'}}>3. </Text>If you decide not to save the time, just click on the timer again. The background will turn back to <Text style={{color:'#D08770'}}>red</Text>, showing that the time <Text style={{fontWeight:'bold'}}>won't be saved </Text>. </Text>
                   <Text style={styles.modalText}><Text style={{fontWeight:'bold'}}>4. </Text>To see your saved times, tap on the <Text style={{fontWeight:'bold'}}>profile</Text> icon on the home screen</Text>
+                  <Text style={styles.modalText}><Text style={{fontWeight:'bold'}}>5. </Text>Swipe on the timer, up or down, to <Text style={{fontWeight:'bold'}}>close</Text> it</Text>
                 </View>
               </View>
             </Modal>}
@@ -519,15 +472,26 @@ const MovementsPage = ({ route, navigation }) => {
                 numColumns={2}
                 key={2}
                 ref={flatListRef}
-                // scrollEnabled={showtimer ? false : true}
+                // onEndReached={() => {
+                //   stopAutoScroll();
+                //   console.log('end reached');
+                // }}
+                scrollEnabled={showtimer ? false : true}
+                // onTouchMove={() => {
+                //   stopAutoScroll();
+                //   console.log('touch move');
+                // }}
                 ListHeaderComponent={
                   <View style={styles.header}>
                     <Animated.View style={{...styles.back_icon, opacity: opacityAnim }}>
                       <Icon name="arrow-back-ios" size={30}  onPress={() => {returnHome()}} />
                     </Animated.View>
                     <Animated.View style={{...styles.refresh_icon, opacity: opacityAnim }}>
-                      <Icon name="autorenew" size={30} color={'#434C5E'} onPress={() => {animateIcon(); handleRefresh(); closeToast()}}/>
+                      <Icon name="autorenew" size={30} color={'#434C5E'} onPress={() => {animateIcon(); handleRefresh();}}/>
                     </Animated.View>
+                    {/* <Animated.View style={{...styles.play_icon, opacity: opacityAnim }}>
+                      <Icon name="play-arrow" size={36} color={'#434C5E'} onPress={() => {animateIcon(); startAutoScroll();}}/>
+                    </Animated.View> */}
                   </View>
                 }
                 ListFooterComponent={
@@ -536,14 +500,14 @@ const MovementsPage = ({ route, navigation }) => {
                         Start the timer and {'\n'}
                         solve the cube! 
                       </Text>
-                      <TouchableOpacity onPress={() => {startTimerToast();}}>
+                      <TouchableOpacity onPress={() => {startTimer();}}>
                         <Animated.View style={{...styles.timer_icon, opacity: opacityAnim }}>
                           <Icon name="timer" size={60}  color={'#434C5E'} />
                         </Animated.View>
                       </TouchableOpacity>
                   </View>
                 }
-            />
+              />
             <Toast config={toastConfig}/>
             </Animated.View>
         </SafeAreaView>

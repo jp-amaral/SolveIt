@@ -5,7 +5,8 @@ import HomePage from './src/HomePage';
 import MovementsPage from './src/MovementsPage';
 import Profile from './src/Profile';
 import * as  Font from 'expo-font';
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen';
+
 
 const Stack = createStackNavigator();
 
@@ -28,11 +29,13 @@ const App = () => {
   }
 
   useEffect(() => {
-    loadResourcesAndDataAsync();
+    SplashScreen.preventAutoHideAsync()
+      .then(() => loadResourcesAndDataAsync())
+      .finally(() => SplashScreen.hideAsync());
   }, []);
 
   if (!isReady) {
-    return <AppLoading />;
+    return null;
   }
   return (
     <NavigationContainer>
