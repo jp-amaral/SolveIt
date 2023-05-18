@@ -1,0 +1,32 @@
+diff --git a/node_modules/react-native-stopwatch-timer/lib/utils.js b/node_modules/react-native-stopwatch-timer/lib/utils.js
+index 60bac43..09132d1 100644
+--- a/node_modules/react-native-stopwatch-timer/lib/utils.js
++++ b/node_modules/react-native-stopwatch-timer/lib/utils.js
+@@ -1,12 +1,9 @@
+ function formatTimeString(time, showMsecs) {
+   let msecs = time % 1000;
+-
+-  if (msecs < 10) {
+-    msecs = `00${msecs}`;
+-  } else if (msecs < 100) {
+-    msecs = `0${msecs}`;
+-  }
+-
++  // if (msecs < 100) msecs = "0";
++  // else msecs = msecs.toString()[0];
++  msecs = msecs.toString().padStart(3, "0");
++  msecs = msecs.toString().slice(0, 2);
+   let seconds = Math.floor(time / 1000);
+   let minutes = Math.floor(time / 60000);
+   let hours = Math.floor(time / 3600000);
+@@ -14,9 +11,7 @@ function formatTimeString(time, showMsecs) {
+   minutes = minutes - hours * 60;
+   let formatted;
+   if (showMsecs) {
+-    formatted = `${hours < 10 ? 0 : ""}${hours}:${
+-      minutes < 10 ? 0 : ""
+-    }${minutes}:${seconds < 10 ? 0 : ""}${seconds}:${msecs}`;
++    formatted = `${ minutes < 10 ? "" : ""}${minutes}:${seconds < 10 ? 0 : ""}${seconds}:${msecs}`;
+   } else {
+     formatted = `${hours < 10 ? 0 : ""}${hours}:${
+       minutes < 10 ? 0 : ""
