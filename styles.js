@@ -43,11 +43,10 @@ export const styles = StyleSheet.create({
       fontWeight: '300',
       textAlign: 'center',
       width: 100,
-      opacity: 0.5,
     },
     input_text_selected: {
       fontFamily: 'RobotoMono',
-      fontSize: 26,
+      fontSize: 36,
       color: '#434C5E',
       fontStyle: 'normal',
       fontWeight: '300',

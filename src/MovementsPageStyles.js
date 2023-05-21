@@ -7,7 +7,6 @@ const itemWidth = width * 0.41; // adjust this value as needed
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E5E9F0',
     alignItems: 'center',
   },
   timer_container: {

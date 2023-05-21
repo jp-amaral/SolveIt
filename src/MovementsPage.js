@@ -23,6 +23,7 @@ const Item = ({value}) => (
   <CubeItem label={value} />
 );
 
+
 const movementLabels = ["F", "NF", "B", "NB", "U", "NU", "D", "ND", "L", "NL", "R", "NR"];
 
 const complementaryMovements = {
@@ -75,6 +76,8 @@ const generateMovements = (numberOfMovements) => {
   return movements;
 };
 
+
+
 const MovementsPage = ({ route, navigation }) => {
 
   const soundObject = new Audio.Sound();
@@ -86,9 +89,6 @@ const MovementsPage = ({ route, navigation }) => {
   const flatListRef = useRef(null);
   const [isModalVisible, setModalVisible] = useState(true);
   const [hasSeenModal, setHasSeenModal] = useState(false);
-  let scrollOffset = 0; // Initialize scroll offset
-  let isScrolling = false; // Initialize scroll state
-  let scrollIntervalId = null;
 
   useEffect(() => {
     async function getHasSeenModal() {
@@ -109,12 +109,13 @@ const MovementsPage = ({ route, navigation }) => {
     getHasSeenModal();
     setModalVisible(false);
   }, []);
+
   const toastConfig = {
     custom: ({ ...rest }) => (
       <Animated.View
         style={{ 
           backgroundColor : showtimer ?  backgroundColor : '#D08770',
-          height: 102, 
+          height: 110, 
           borderRadius: 30, 
           alignItems: 'center', 
           justifyContent: 'center', 
@@ -150,28 +151,6 @@ const MovementsPage = ({ route, navigation }) => {
   };
   getFormattedTime = (time) => {
     this.currentTime = time;
-  };
-
-  //AutoScroll
-  // Function to start scrolling
-  const startAutoScroll = () => {
-    if (!isScrolling) {
-      console.log("Start autoscroll");
-      isScrolling = true;
-      scrollIntervalId = setInterval(() => {
-        scrollOffset += 180; // Update scroll offset. You can control speed here.
-        flatListRef.current.scrollToOffset({ animated: true, offset: scrollOffset });
-      }, 2000); // Control the scroll interval. Lower value = faster scroll.
-    }
-  };
-
-  // Function to stop scrolling
-  const stopAutoScroll = () => {
-    isScrolling = false;
-    if (scrollIntervalId !== null) {
-      clearInterval(scrollIntervalId);
-      scrollOffset = 0;
-    }
   };
 
   //Refresh sound
@@ -228,6 +207,28 @@ const MovementsPage = ({ route, navigation }) => {
     }).start();
     isGreen.current = !isGreen.current;
   };
+
+  const colorAnim2 = useRef(new Animated.Value(0)).current;
+  const backgroundColor2 = colorAnim2.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#E5E9F0', '#a2a6ab']
+  });
+  const animateBackgroundDark = () => {
+    Animated.timing(colorAnim2, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const animateBackgroundLight = () => {
+    Animated.timing(colorAnim2, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: false,
+    }).start();
+  };
+
 
   //Looping animation
   const [fadeAnim] = useState(new Animated.Value(1)); // Initial value for opacity: 0
@@ -293,12 +294,14 @@ const MovementsPage = ({ route, navigation }) => {
       animateBackground();
       deactivateKeepAwake();
       setSaved(!saved);
-      console.log(currentTime)
+      console.log(currentTime);
+      animateBackgroundLight();
     };
     
     const startTimer = () => {
       console.log(hasSeenModal)
       setModalVisible(true);
+      animateBackgroundDark();
       if(hasSeenModal === 'true' || hasSeenModal === true){
         activateKeepAwakeAsync();
         playSoundStart();
@@ -325,6 +328,7 @@ const MovementsPage = ({ route, navigation }) => {
             setShowTimer(false);
             setTimerFinished(false);
             setSaved(false);
+            animateBackgroundLight();
             isGreen.current = 0;
           },
           bottomOffset: 10,
@@ -412,7 +416,6 @@ const MovementsPage = ({ route, navigation }) => {
     useEffect(() => {
       const backAction = () => {
         Toast.hide();
-        stopAutoScroll();
       };
       
       const backHandler = BackHandler.addEventListener(
@@ -439,7 +442,7 @@ const MovementsPage = ({ route, navigation }) => {
 
     return (
         
-        <SafeAreaView style={styles.container}>
+        <Animated.View style={{...styles.container, backgroundColor: backgroundColor2}}>
           <StatusBar style="auto" />
             {seenModalRef.current === false && <Modal
               animationType="fade"
@@ -457,7 +460,7 @@ const MovementsPage = ({ route, navigation }) => {
                   <Text style={styles.modalTextTitle}>How to use the timer?</Text>
                   <View style={styles.modalLine}></View>
                   <Text style={styles.modalText}><Text style={{fontWeight:'bold'}}>1. </Text>Tap the timer icon to <Text style={{fontWeight:'bold'}}>start</Text></Text>
-                  <Text style={styles.modalText}><Text style={{fontWeight:'bold'}}>2. </Text>Tap the timer again to <Text style={{fontWeight:'bold'}}>stop</Text> and the background will change to <Text style={{color:'#A3BE8C'}}>green</Text>, indicating that the time will be <Text style={{fontWeight:'bold'}}>saved</Text></Text>
+                  <Text style={styles.modalText}><Text style={{fontWeight:'bold'}}>2. </Text>Tap anywhere on the page to <Text style={{fontWeight:'bold'}}>stop</Text> and the background will change to <Text style={{color:'#A3BE8C'}}>green</Text>, indicating that the time will be <Text style={{fontWeight:'bold'}}>saved</Text></Text>
                   <Text style={styles.modalText}><Text style={{fontWeight:'bold'}}>3. </Text>If you decide not to save the time, just click on the timer again. The background will turn back to <Text style={{color:'#D08770'}}>red</Text>, showing that the time <Text style={{fontWeight:'bold'}}>won't be saved </Text>. </Text>
                   <Text style={styles.modalText}><Text style={{fontWeight:'bold'}}>4. </Text>To see your saved times, tap on the <Text style={{fontWeight:'bold'}}>profile</Text> icon on the home screen</Text>
                   <Text style={styles.modalText}><Text style={{fontWeight:'bold'}}>5. </Text>Swipe on the timer, up or down, to <Text style={{fontWeight:'bold'}}>close</Text> it</Text>
@@ -472,15 +475,12 @@ const MovementsPage = ({ route, navigation }) => {
                 numColumns={2}
                 key={2}
                 ref={flatListRef}
-                // onEndReached={() => {
-                //   stopAutoScroll();
-                //   console.log('end reached');
-                // }}
                 scrollEnabled={showtimer ? false : true}
-                // onTouchMove={() => {
-                //   stopAutoScroll();
-                //   console.log('touch move');
-                // }}
+                onTouchStart={() => {
+                  if(showtimer && isRunning) {
+                    finishTimer();
+                  }
+                } }
                 ListHeaderComponent={
                   <View style={styles.header}>
                     <Animated.View style={{...styles.back_icon, opacity: opacityAnim }}>
@@ -510,7 +510,7 @@ const MovementsPage = ({ route, navigation }) => {
               />
             <Toast config={toastConfig}/>
             </Animated.View>
-        </SafeAreaView>
+        </Animated.View>
     );
 };
 

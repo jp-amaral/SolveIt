@@ -2,7 +2,7 @@
   "expo": {
     "name": "SolveIt",
     "slug": "SolveIt",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -23,7 +23,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#E5E9F0"
       },
-      "package": "com.jp_amaral.SolveIt"
+      "package": "com.jp_amaral.SolveIt",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/icon.png"
